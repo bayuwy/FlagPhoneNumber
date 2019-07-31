@@ -286,6 +286,15 @@ open class FPNTextField: UITextField, FPNCountryPickerDelegate, FPNDelegate {
 	// Private
 
 	@objc private func didEditText() {
+        
+        if let number = text, number.hasPrefix("+") {
+            let countries = FPNCountry.getAllCountries()
+            if let country = countries.first(where: { number.range(of: "^\($0.phoneCode)", options: .regularExpression) != nil }) {
+                selectedCountry = country
+                text = number.replacingOccurrences(of: country.phoneCode, with: "")
+            }
+        }
+        
 		if let phoneCode = selectedCountry?.phoneCode, let number = text {
 			var cleanedPhoneNumber = clean(string: "\(phoneCode) \(number)")
 

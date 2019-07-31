@@ -112,7 +112,7 @@ open class FPNTextField: UITextField, FPNCountryPickerDelegate, FPNDelegate {
 
 		keyboardType = .phonePad
 		autocorrectionType = .no
-		addTarget(self, action: #selector(didEditText), for: .editingChanged)
+		addTarget(self, action: #selector(preDidEditText), for: .editingChanged)
 		addTarget(self, action: #selector(displayNumberKeyBoard), for: .touchDown)
 	}
 
@@ -284,19 +284,26 @@ open class FPNTextField: UITextField, FPNCountryPickerDelegate, FPNDelegate {
 	}
 
 	// Private
-
-	@objc private func didEditText() {
+    
+    @objc private func preDidEditText() {
         
         if let number = text, number.hasPrefix("+") {
             let countries = FPNCountry.getAllCountries()
-            if let country = countries.first(where: { number.range(of: "^\($0.phoneCode)", options: .regularExpression) != nil }) {
+            if let country = countries.first(where: { number.hasPrefix($0.phoneCode) }) {
                 selectedCountry = country
-                text = number.replacingOccurrences(of: country.phoneCode, with: "")
+                return
             }
         }
         
+        didEditText()
+    }
+
+	@objc private func didEditText() {
+        
 		if let phoneCode = selectedCountry?.phoneCode, let number = text {
-			var cleanedPhoneNumber = clean(string: "\(phoneCode) \(number)")
+            
+            var cleanedPhoneNumber = clean(string: "\(phoneCode) \(number)")
+            if number.hasPrefix(phoneCode) { cleanedPhoneNumber = clean(string: number) }
 
 			if let validPhoneNumber = getValidNumber(phoneNumber: cleanedPhoneNumber) {
 				nbPhoneNumber = validPhoneNumber
